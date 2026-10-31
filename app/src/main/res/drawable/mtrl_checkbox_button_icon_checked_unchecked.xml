@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <animated-vector android:drawable="@drawable/mtrl_ic_check_mark"
   xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
-    <target android:name="@string/mtrl_checkbox_button_icon_path_group_name" android:animation="@drawable/$mtrl_checkbox_button_icon_checked_unchecked__0" />
-    <target android:name="@string/mtrl_checkbox_button_icon_path_group_name" android:animation="@drawable/$mtrl_checkbox_button_icon_checked_unchecked__1" />
-    <target android:name="@string/mtrl_checkbox_button_icon_path_name" android:animation="@drawable/$mtrl_checkbox_button_icon_checked_unchecked__2" />
+    <target android:name="@string/mtrl_checkbox_button_icon_path_group_name"><objectAnimator android:interpolator="?motionEasingEmphasizedAccelerateInterpolator" android:duration="@integer/m3_sys_motion_duration_short3" android:valueFrom="1.0" android:valueTo="0.6" android:valueType="floatType" android:propertyName="scaleX" /></target>
+    <target android:name="@string/mtrl_checkbox_button_icon_path_group_name"><objectAnimator android:interpolator="?motionEasingEmphasizedAccelerateInterpolator" android:duration="@integer/m3_sys_motion_duration_short3" android:valueFrom="1.0" android:valueTo="0.6" android:valueType="floatType" android:propertyName="scaleY" /></target>
+    <target android:name="@string/mtrl_checkbox_button_icon_path_name"><objectAnimator android:interpolator="?motionEasingLinearInterpolator" android:duration="@integer/m3_sys_motion_duration_short1" android:valueFrom="1.0" android:valueTo="0.0" android:valueType="floatType" android:propertyName="fillAlpha" /></target>
 </animated-vector>
