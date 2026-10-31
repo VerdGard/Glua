@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material3.AlertDialog
@@ -55,6 +57,12 @@ fun EditorScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showSaveAs by remember { mutableStateOf(false) }
+    var fieldValue by remember { mutableStateOf(TextFieldValue(state.text)) }
+
+    // 外部打开文件时同步到编辑区
+    androidx.compose.runtime.LaunchedEffect(state.file) {
+        fieldValue = TextFieldValue(state.text)
+    }
 
     Column(Modifier.fillMaxSize()) {
         Surface(color = MaterialTheme.colorScheme.surface) {
@@ -87,6 +95,9 @@ fun EditorScreen(
                 if (state.running) {
                     CircularProgressIndicator(Modifier.width(22.dp).height(22.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(6.dp))
+                    IconButton(onClick = viewModel::stop) {
+                        Icon(Icons.Default.Stop, contentDescription = "中止")
+                    }
                 } else {
                     IconButton(onClick = viewModel::run) {
                         Icon(Icons.Default.PlayArrow, contentDescription = "运行")
@@ -98,8 +109,8 @@ fun EditorScreen(
         HorizontalDivider()
 
         CodeArea(
-            text = state.text,
-            onTextChange = viewModel::updateText,
+            value = fieldValue,
+            onValueChange = { fieldValue = it; viewModel.updateText(it.text) },
             modifier = Modifier.weight(1f),
         )
 
@@ -122,7 +133,13 @@ fun EditorScreen(
 
         if (state.output.isNotEmpty()) {
             HorizontalDivider()
-            OutputPanel(state.output, onClear = viewModel::clearOutput, onOpenLogcat = onOpenLogcat)
+            OutputPanel(
+                output = state.output,
+                running = state.running,
+                elapsedMs = state.lastElapsedMs,
+                onClear = viewModel::clearOutput,
+                onOpenLogcat = onOpenLogcat,
+            )
         }
     }
 
@@ -148,29 +165,10 @@ fun EditorScreen(
 }
 
 @Composable
-private fun CodeArea(
-    text: String,
-    onTextChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        BasicTextField(
-            value = text,
-            onValueChange = onTextChange,
-            textStyle = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onBackground,
-            ),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-        )
-    }
-}
-
-@Composable
 private fun OutputPanel(
     output: List<String>,
+    running: Boolean,
+    elapsedMs: Long,
     onClear: () -> Unit,
     onOpenLogcat: () -> Unit,
 ) {
@@ -181,7 +179,14 @@ private fun OutputPanel(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text("输出", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    when {
+                        running -> "运行中…"
+                        elapsedMs > 0 -> "输出 · ${elapsedMs}ms"
+                        else -> "输出"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                )
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onOpenLogcat) { Text("日志", style = MaterialTheme.typography.labelSmall) }
                 TextButton(onClick = onClear) { Text("清空", style = MaterialTheme.typography.labelSmall) }

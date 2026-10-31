@@ -52,5 +52,9 @@ android {
 dependencies {
     implementation("androidx.annotation:annotation:1.9.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+
+    // Lua 5.3 解释器。纯 Java 实现，无原生依赖，可在无 root 设备上运行。
+    implementation("org.luaj:luaj-jse:3.0.1")
+
     testImplementation("junit:junit:4.13.2")
 }

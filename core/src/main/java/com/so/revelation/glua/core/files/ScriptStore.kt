@@ -34,6 +34,9 @@ class ScriptStore(private val root: File) {
         GLog.i(TAG, "脚本目录: ${root.absolutePath}")
     }
 
+    /** 脚本根目录，供 MCP 等外部模块展示与解析路径。 */
+    fun rootPath(): File = root
+
     suspend fun ensureRoot(): Boolean = withContext(Dispatchers.IO) {
         if (root.exists()) {
             if (root.isDirectory) true else {
@@ -126,5 +129,5 @@ class ScriptStore(private val root: File) {
     }
 
     private fun String.sanitize(): String =
-        this.replace(Regex("""[\\/:*?"<>|]"""), "_").take(100)
+        this.replace(Regex("[\\\\/:*?\"<>|]"), "_").take(100)
 }

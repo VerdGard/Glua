@@ -9,10 +9,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.so.revelation.glua.core.files.ScriptStore
+import com.so.revelation.glua.core.lua.gg.GgApiCatalog
+import com.so.revelation.glua.core.lua.gg.GgRuntime
+import com.so.revelation.glua.core.lua.vm.LuaVmBridge
+import com.so.revelation.glua.ui.editor.ComposeGgUiHost
 import com.so.revelation.glua.core.log.GLog
 import com.so.revelation.glua.core.lua.LuaEngine
 import com.so.revelation.glua.ui.editor.EditorScreen
@@ -55,10 +60,20 @@ private object Routes {
 @Composable
 private fun GluaNavHost() {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     // 应用级单例：脚本仓库与 Lua 引擎
-    val scriptStore = remember { ScriptStore(File(filesDir, "scripts")) }
-    val luaEngine = remember { LuaEngine() }
+    val app = context.applicationContext as GluaApp
+    val scriptStore = app.scriptStore
+    val luaEngine = app.luaEngine
+    val ggRuntime = app.ggRuntime
+    val mcpManager = app.mcpManager
+
+    // 启动自检：确认 gg API 实现与目录完全对齐
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        val documented = GgApiCatalog.functions.map { it.name }.toSet()
+        LuaVmBridge.audit(ggRuntime, documented)
+    }
 
     // 当前打开的文件在 editor 路由间传递
     var pendingFile: File? = remember { null }
@@ -93,12 +108,15 @@ private fun GluaNavHost() {
         composable(Routes.LOGCAT) {
             LogcatScreen(
                 onBack = { navController.popBackStack() },
-                exportDir = File(cacheDir, "logs"),
+                exportDir = File(context.cacheDir, "logs"),
             )
         }
 
         composable(Routes.SETTINGS) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                mcpManager = mcpManager,
+            )
         }
     }
 }
