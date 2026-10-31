@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout0" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textSize="26.0sp" android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="编辑器设置" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView0" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="编辑保存后立即生效嗷！" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="标题栏背景" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout1" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="背景颜色(编辑器，顶部栏，打印台)" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout2" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="文字颜色(编辑器，顶部栏，打印台)" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView2" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout3" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="选取文字颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView3" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout4" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="空格，换号符颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView4" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout5" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="关键字颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView5" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout6" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="函数名颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView6" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout7" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="字符串，数字颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView7" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout8" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="次关键字颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView8" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout9" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="符号颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView9" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout10" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="光标颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView10" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout11" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="当前行颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView11" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/editor_colorLinearLayout12" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip">
+        <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:paddingLeft="20.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="代码注释颜色" />
+        <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:id="@id/editor_colorTextView12" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="20.0dip" android:layout_marginRight="20.0dip" android:text="默认" gone="1" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/editor_colorLinearLayout13" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@id/icon" android:layout_width="20.0dip" android:layout_height="wrap_content" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip" android:layout_weight="1.0">
+            <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="自动换行" />
+            <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="代码超出屏幕是否换行显示" gone="1" />
+        </LinearLayout>
+        <Switch android:id="@id/view_setSwitch_zdhh" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@id/icon1" android:layout_width="20.0dip" android:layout_height="wrap_content" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip" android:layout_weight="1.0">
+            <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="使用软件字体" />
+            <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="代码编辑器是否使用启示录自带的字体(否则使用系统字体)" />
+        </LinearLayout>
+        <Switch android:id="@id/view_setSwitch_font" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <ImageView android:layout_width="20.0dip" android:layout_height="wrap_content" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip" android:layout_weight="1.0">
+            <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="启动实时错误高亮" />
+            <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="开启后编辑器自带实时错误检查功能，并高亮显示错误行" />
+        </LinearLayout>
+        <Switch android:id="@id/view_setSwitch_errorAutoComplete" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/editor_colorLinearLayout14" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <ImageView android:layout_width="20.0dip" android:layout_height="wrap_content" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:paddingTop="1.0dip" android:paddingBottom="1.0dip" android:layout_width="0.0dip" android:layout_height="wrap_content" android:layout_marginTop="10.0dip" android:layout_marginBottom="10.0dip" android:layout_weight="1.0">
+            <TextView android:textStyle="bold" android:gravity="start" android:layout_gravity="center" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="自动保存" />
+            <TextView android:textAppearance="?android:textAppearanceSmall" android:textSize="11.0sp" android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="默认每30秒自动保存编辑中的脚本文件" gone="1" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

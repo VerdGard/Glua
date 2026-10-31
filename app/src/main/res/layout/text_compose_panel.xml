@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/panel_root" android:background="@drawable/magnifier_background" android:layout_width="wrap_content" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <HorizontalScrollView android:id="@id/panel_hv" android:layout_width="wrap_content" android:layout_height="fill_parent">
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="fill_parent">
+            <ImageButton android:id="@id/panel_btn_select_all" android:background="#00000000" android:layout_width="45.0dip" android:layout_height="45.0dip" android:src="@drawable/round_select_all_20" />
+            <ImageButton android:id="@id/panel_btn_copy" android:background="#00000000" android:layout_width="45.0dip" android:layout_height="45.0dip" android:src="@drawable/round_content_copy_20" />
+            <ImageButton android:id="@id/panel_btn_paste" android:background="#00000000" android:layout_width="45.0dip" android:layout_height="45.0dip" android:src="@drawable/round_content_paste_20" />
+            <ImageButton android:id="@id/panel_btn_cut" android:background="#00000000" android:layout_width="45.0dip" android:layout_height="45.0dip" android:src="@drawable/round_content_cut_20" />
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>
