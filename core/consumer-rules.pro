@@ -1,3 +1,5 @@
 -keep class com.so.revelation.glua.core.** { *; }
 -dontwarn javax.script.**
 -dontwarn org.luaj.vm2.script.**
+-dontwarn org.apache.bcel.**
+-dontwarn org.luaj.vm2.luajc.**
