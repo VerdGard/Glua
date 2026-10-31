@@ -46,6 +46,9 @@ android {
 
     packaging {
         jniLibs.useLegacyPackaging = false
+        resources.excludes += setOf(
+            "META-INF/services/javax.script.ScriptEngineFactory",
+        )
     }
 }
 

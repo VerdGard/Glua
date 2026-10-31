@@ -45,7 +45,10 @@ android {
             "/META-INF/{AL2.0,LGPL2.1}",
             "META-INF/DEPENDENCIES",
             "META-INF/LICENSE*",
-            "META-INF/NOTICE*"
+            "META-INF/NOTICE*",
+            // luaj-jse 的 JSR-223 服务描述符引用了 javax.script，
+            // Android 上没有这个包，不打进 APK 可避免 R8 报 Missing class
+            "META-INF/services/javax.script.ScriptEngineFactory",
         )
     }
 

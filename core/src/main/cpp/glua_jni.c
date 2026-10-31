@@ -11,8 +11,6 @@ static jobject g_sink_obj = NULL;
 static jmethodID g_sink_method = NULL;
 static pthread_mutex_t g_jni_lock = PTHREAD_MUTEX_INITIALIZER;
 
-static const char *g_sink_class = "com/so/revelation/glua/core/log/NativeLogSink";
-
 /**
  * 原生日志回调 -> JVM。
  * glua_log_vwrite 在持锁状态下调用本函数，这里不能再长期阻塞，
