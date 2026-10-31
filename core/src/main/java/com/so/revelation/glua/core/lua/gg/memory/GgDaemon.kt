@@ -62,6 +62,31 @@ class GgDaemon(
             ARM('a', "arm", false),
         }
 
+        /**
+         * 每个主程序需要配套提取的辅助库。
+         *
+         * 键是主程序 [LibId]，值是需要一并提取的 chunk 后缀：
+         * SH（shell 包装）、STUB（注入桩）、PATCH（补丁）、CLIENT。
+         * 来自原版 `DaemonLoader.extractShLibs` 的 switch 分支。
+         *
+         * 这些文件是否被 daemon 真正使用取决于运行模式，
+         * 但缺失会导致部分功能（如 ptrace 注入）不可用，因此一并提取。
+         */
+        private val SIDE_LIBS: Map<LibId, List<String>> = mapOf(
+            LibId.X86_64_PIE to listOf("01", "4", "f", "k"),
+            LibId.X86_PIE to listOf("3", "e", "j"),
+            LibId.X86 to listOf("3", "e", "j"),
+            LibId.ARM64_PIE to listOf("08", "6", "g", "l"),
+            LibId.ARM_V7A_PIE to listOf("9", "h", "n"),
+            LibId.ARM_V7A to listOf("9", "h", "n"),
+            LibId.ARM_PIE to listOf("d", "i", "o"),
+            LibId.ARM to listOf("d", "i", "o"),
+            LibId.X86_64 to listOf("4", "f", "k"),
+        )
+
+        /** 所有架构共用的 sh.jar（chunk 后缀 sh）。 */
+        private const val SH_JAR_SUFFIX = "sh"
+
         /** 按 SDK 与 ABI 排序的候选列表。 */
         fun candidatesFor(sdk: Int, abis: Array<String>): List<LibId> {
             val is64 = abis.any { it.contains("64") }
@@ -154,8 +179,11 @@ class GgDaemon(
     private fun daemonPath(id: LibId): String = File(daemonDir(), libName(id)).absolutePath
 
     /** 从 res/raw 提取 ELF 到私有目录。 */
-    private fun extract(id: LibId, target: File): Boolean {
-        val name = "chunk${id.id}"
+    private fun extract(id: LibId, target: File): Boolean = extract(id.id.toString(), target)
+
+    /** 按 chunk 后缀提取。 */
+    private fun extract(suffix: String, target: File): Boolean {
+        val name = "chunk$suffix"
         val stream = rawProvider(name) ?: run {
             GLog.w(TAG, "资源不存在: $name")
             return false
@@ -212,10 +240,44 @@ class GgDaemon(
 
             val pid = processId(proc)
             GLog.i(TAG, "daemon 已启动: ${id.desc} pid=$pid")
+
+            // 提取配套的辅助库（stub / patch / sh / sh.jar）
+            extractSideLibs(id)
+
             StartResult.Success(id, file.absolutePath, pid)
         }.getOrElse { t ->
             GLog.e(TAG, "启动 ${id.desc} 失败", t)
             StartResult.Failed(t.message ?: t::class.java.simpleName, t)
+        }
+    }
+
+    /**
+     * 提取主程序所需的辅助库。
+     *
+     * 失败不阻断启动——辅助库用于特定功能（注入、shell 包装），
+     * 缺失时 daemon 主功能仍可用。每个失败都记日志便于排查。
+     */
+    private fun extractSideLibs(mainId: LibId) {
+        val dir = daemonDir()
+
+        SIDE_LIBS[mainId].orEmpty().forEach { suffix ->
+            val target = File(dir, "$LIB_PREFIX$suffix$LIB_SUFFIX")
+            if (target.exists() && target.length() > 0) return@forEach
+            if (!extract(suffix, target)) {
+                GLog.d(TAG, "辅助库 chunk$suffix 不可用（可能未打包）")
+            }
+        }
+
+        // sh.jar：daemon 执行 shell 命令时使用
+        val shJar = File(dir, "sh.jar")
+        if (!shJar.exists() || shJar.length() == 0L) {
+            val stream = rawProvider("chunk$SH_JAR_SUFFIX")
+            if (stream != null) {
+                runCatching {
+                    stream.use { ins -> FileOutputStream(shJar).use { ins.copyTo(it, 65536) } }
+                    GLog.d(TAG, "已提取 sh.jar (${shJar.length()} 字节)")
+                }.onFailure { GLog.w(TAG, "提取 sh.jar 失败: ${it.message}") }
+            }
         }
     }
 
