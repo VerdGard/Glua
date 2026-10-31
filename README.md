@@ -11,6 +11,15 @@
 早期版本来自对一个旧 APK 的逆向还原，那份代码存放在
 [`legacy`](../../tree/legacy) 分支，仅作参考，不再维护。
 
+## 文档
+
+| 文档 | 内容 |
+|---|---|
+| [docs/LUA.md](docs/LUA.md) | Lua 5.3 语言指南：语法、标准库、Glua 环境差异、常见陷阱 |
+| [docs/GG_API.md](docs/GG_API.md) | GameGuardian API 完整参考：68 个函数 + 66 个常量，含中文说明与示例 |
+| [docs/MCP.md](docs/MCP.md) | MCP 服务器：协议、14 个工具、接入配置、故障排查 |
+| [SKILL.md](SKILL.md) | 给 AI 助手的项目指南：结构、约定、工作流、已知限制 |
+
 ## 架构
 
 ```
@@ -234,6 +243,114 @@ App 内置 MCP 服务器，AI 客户端可远程读写脚本、运行代码、�
 - MCP 与 UI 共享同一 `ScriptStore` / `LuaEngine`，行为一致
 - `script_run` 支持超时（默认 30s），超时自动请求中止
 
+## gg.* 内存引擎
+
+APK 内的 36 个 ELF（`res/raw/chunk*`）是 daemon 二进制。内存读写走这条链路：
+
+```
+gg.searchNumber(...)
+  -> GgRuntime.memoryOp()
+  -> GgMemoryEngine.searchMask()
+  -> GgProtocol (二进制帧：0x02|len|payload|0x03，CRC32 校验)
+  -> daemon 进程 (root + ptrace)
+  -> /proc/<pid>/mem
+```
+
+### 协议层
+
+`GgProtocol` 移植自开源 GameGuardian 96 版 `InOut`，Kotlin 化并去掉 UI 依赖：
+
+- 帧格式：`0x02 | length(4, LE) | payload | 0x03`
+- int 按 `byteOrderMask`（默认 0x0F）异或混淆
+- CRC32 校验（跳过 cmd/seq 两字节）
+- 非 fifo 模式自动做 hex 封装
+
+### 命令表
+
+从 `DaemonManager` 的 `startMessage` 调用提取，共 24 个 cmd：
+
+| cmd | 操作 | 参数 |
+|---|---|---|
+| 29 | 搜索策略 | int strategy |
+| 32 | 分配内存页 | int mode, long address |
+| 33 | 读内存 | int len, (int flag, long addr)* |
+| 36 | 写内存 | int len, (int flag, long addr)*, data |
+| 37 | 附加进程 | int pid, byte pkgLen, pkg, byte libLen, lib |
+| 38 | 解除附加 | - |
+| 39 | 区域列表 | - |
+| 40 | 指针搜索 | int maxOffset, long from, long to |
+| 41 | 模糊初始化 | int type, long from, long to |
+| 43 | 模糊细化 | int type, int sign, int len, bytes |
+| 47 | 结果列表 | int maxCount, int skip |
+| 48 | 加载结果 | int len, bytes |
+| 50 | 编辑项 | long addr, int n |
+| 52 | 结果集写入 | int len, (int flag, long addr)* |
+| 53 | 信号 | byte signal |
+| 54 | 初始化 | Config 字段序列 |
+| 55 | 分组搜索 | int generalFlags, int range, long from, long to, int count, ... |
+| 59 | 速度 hack | double speed |
+| 61 | 掩码搜索 | long from, long to, int flags, int len, bytes |
+| 62 | 复制内存 | long from, long to, int bytes |
+| 63 | 时间跳跃 | string time |
+| 64 | 取消 | - |
+
+### 无 root 时的行为
+
+`GgEnvironment` 检测到无 root 时 `GgDaemon.start()` 返回 `NoRoot`，
+`GgMemoryEngine` 不建立连接，所有内存函数返回错误字符串。脚本继续执行。
+
+## 日志持久化
+
+用追加文件而非 SQLite。原因：
+
+1. `:core` 是纯 JVM 模块，`android.database.sqlite` 不可用
+2. Room / SQLDelight 会带来大量依赖
+3. 日志是只追加、顺序读取的场景，顺序文件足够
+
+文件格式（全部小端）：
+
+```
+MAGIC(8 "GLLOG") | 记录*
+记录 := level(1) | tagLen(2) | tag | msgLen(4) | msg | ts(8) | pid(4) | tid(8) | src(1) | thrLen(4) | thr
+```
+
+- 写入在单线程执行器上批量提交（500ms 或 200 条），不阻塞调用方
+- 单文件上限 8 MB，超限截断保留后半
+- 损坏记录会被跳过，不影响整体读取
+- API：`LogBus.attachPersistence()` / `readPersisted()` / `clearPersisted()`
+
+## 自动缩进与括号配对
+
+`AutoIndent`（`core/lua/syntax`）：
+
+- 块缩进：`function`/`if`/`for`/`while`/`do`/`then`/`else`/`repeat` 开新级
+- 去缩进：`end`/`until`/`else`/`elseif` 开头减一级
+- 单行块（`if x then return end`）不影响缩进
+- `repeat`/`until` 用栈精确配对
+- 括号自动补全：`(` `[` `{` `"` `'`
+- 成对删除：光标在 `()` 中间时退格同时删两个
+- `reindent()` 可整体重排文档
+
+`CodeArea` 通过比较新旧 `TextFieldValue` 推断用户操作并应用上述规则。
+
+## 对话框同步等待
+
+`gg.alert` / `gg.choice` / `gg.multiChoice` / `gg.prompt` 现在真正等待用户响应：
+
+```
+Lua 脚本 (IO 线程)          Compose (主线程)
+      |                          |
+      |-- 创建 Waiter ---------->|
+      |-- pendingDialog = req -->| 渲染对话框
+      |-- latch.await() 阻塞      | 用户点击
+      |<-- respond(result) ------|
+      |-- 返回给 Lua              |
+```
+
+- 用 `CountDownLatch` 桥接，超时 5 分钟
+- **必须在非主线程执行脚本**，`LuaEngine` 已保证在 `Dispatchers.IO`
+- 用户取消返回 `nil`（Kotlin 侧用 `0` / 空串 / `null` 表示）
+
 ## 当前进度
 
 已完成（基础架构）：
@@ -255,12 +372,10 @@ App 内置 MCP 服务器，AI 客户端可远程读写脚本、运行代码、�
 待完成：
 
 - [x] **Lua 执行引擎**（LuaJ 3.0.1，纯 Java，无原生依赖）
-- [ ] `gg.*` 内存引擎（搜索、读写、冻结）。需要 root + native 实现，
-      当前所有内存类函数返回"尚未接入"错误字符串。
-      可参考 `修复96版开源GG` 的 `android/ext/*`（119 个未混淆类）填充实现。
-- [ ] 自动缩进与括号配对（高亮与补全已完成）
-- [ ] 日志持久化到 SQLite（当前仅内存）
-- [ ] 对话框同步等待（Lua 协程），当前 `gg.alert` 等展示后立即返回
+- [x] **`gg.*` 内存引擎**：daemon 协议层 + 22 个内存函数接线
+- [x] **自动缩进与括号配对**
+- [x] **日志持久化**（追加文件格式，非 SQLite，见下）
+- [x] **对话框同步等待**（CountDownLatch 桥接 Lua 线程与 Compose）
 
 ## 许可
 

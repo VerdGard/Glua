@@ -31,6 +31,27 @@ object LogBus {
     private val idGenerator = AtomicLong(0)
     private var buffer = RingBuffer<LogEntry>(DEFAULT_CAPACITY)
 
+    /** 持久化后端，为 null 时仅内存。 */
+    @Volatile
+    private var persistence: LogPersistence? = null
+
+    /** 挂载持久化，此后每条日志都会异步落盘。 */
+    fun attachPersistence(p: LogPersistence) {
+        persistence = p
+    }
+
+    /** 已持久化的条数，用于 UI 展示。 */
+    fun persistedCount(): Long = persistence?.persistedCount ?: 0L
+
+    /** 从磁盘读回历史日志（不进入实时流）。 */
+    fun readPersisted(limit: Int = 5000): List<LogEntry> =
+        persistence?.readAll(limit) ?: emptyList()
+
+    /** 清空磁盘日志。 */
+    fun clearPersisted() {
+        persistence?.clear()
+    }
+
     private val _stream = MutableSharedFlow<LogEntry>(
         replay = 0,
         extraBufferCapacity = 256,
@@ -70,6 +91,7 @@ object LogBus {
             throwable = throwable?.let { stackTraceOf(it) },
         )
         synchronized(lock) { buffer.add(entry) }
+        persistence?.record(entry)
         _stream.tryEmit(entry)
         _version.value = idGenerator.get()
     }

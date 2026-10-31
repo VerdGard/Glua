@@ -54,6 +54,7 @@ fun EditorScreen(
     viewModel: EditorViewModel,
     onBack: () -> Unit,
     onOpenLogcat: () -> Unit,
+    ggUiHost: ComposeGgUiHost? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showSaveAs by remember { mutableStateOf(false) }
@@ -142,6 +143,9 @@ fun EditorScreen(
             )
         }
     }
+
+    // gg.alert / gg.choice 等对话框的宿主
+    ggUiHost?.let { GgDialogHost(it) }
 
     if (showSaveAs) {
         var name by remember { mutableStateOf("") }

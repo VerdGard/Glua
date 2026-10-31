@@ -17,9 +17,16 @@ import kotlinx.coroutines.flow.asStateFlow
  * 而不是在核心层直接持有 Activity 引用——避免内存泄漏，
  * 也让核心模块保持无 Android UI 依赖。
  *
- * 注意：Lua 脚本是同步执行的，而对话框是异步的。
- * 当前策略是"展示后立即返回"，返回值不代表用户的选择。
- * 真正实现阻塞等待需要 Lua 协程支持，属于 VM 接入后的工作。
+ * ## 同步等待
+ *
+ * Lua 脚本在 IO 线程同步执行，而对话框在主线程异步展示。
+ * 为了让 `gg.alert` 的返回值真实反映用户点击，这里用 [CountDownLatch]：
+ * 脚本线程调用时阻塞等待，Compose 在用户点击后写入结果并计数归零。
+ *
+ * **重要**：调用方必须在非主线程执行脚本，否则会 ANR。
+ * [LuaEngine] 已经保证在 `Dispatchers.IO` 上执行。
+ *
+ * 超时保护：默认 5 分钟，超时后按"取消"处理并记录日志。
  */
 class ComposeGgUiHost(
     private val context: Context,
@@ -61,13 +68,47 @@ class ComposeGgUiHost(
     private val _pendingDialog = MutableStateFlow<DialogRequest?>(null)
     val pendingDialog: StateFlow<DialogRequest?> = _pendingDialog.asStateFlow()
 
+    /** 等待用户响应的同步原语。 */
+    private class Waiter {
+        val latch = java.util.concurrent.CountDownLatch(1)
+        @Volatile var result: Any? = null
+    }
+
+    @Volatile
+    private var currentWaiter: Waiter? = null
+
+    /** 对话框等待超时（毫秒）。 */
+    private var dialogTimeoutMs: Long = 5 * 60 * 1000L
+
+    /**
+     * 阻塞等待用户响应。
+     * @return 用户选择的结果；超时返回 null
+     */
+    private fun awaitResponse(waiter: Waiter): Any? {
+        val ok = waiter.latch.await(dialogTimeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+        if (!ok) {
+            GLog.w(TAG, "对话框等待超时（${dialogTimeoutMs}ms）")
+            _pendingDialog.value = null
+        }
+        return waiter.result
+    }
+
+    /** 用户做出选择后调用，唤醒等待的脚本线程。 */
+    fun respond(result: Any?) {
+        val w = currentWaiter ?: return
+        w.result = result
+        _pendingDialog.value = null
+        w.latch.countDown()
+    }
+
     private val _toast = MutableStateFlow<String?>(null)
     val toast: StateFlow<String?> = _toast.asStateFlow()
 
     private val _panelVisible = MutableStateFlow(true)
 
+    /** 用户取消对话框。 */
     fun dismissDialog() {
-        _pendingDialog.value = null
+        respond(null)
     }
 
     fun consumeToast() {
@@ -82,17 +123,22 @@ class ComposeGgUiHost(
 
     override fun alert(text: String, positive: String, negative: String?, neutral: String?): Any {
         GLog.i(TAG, "gg.alert: $text")
+        val waiter = Waiter()
+        currentWaiter = waiter
         _pendingDialog.value = DialogRequest.Alert(text, positive, negative, neutral)
-        // 返回值语义：GG 返回点击的按钮序号（1 起）。异步场景下无法得知，返回 1。
-        return 1
+        // GG 语义：返回点击的按钮序号（1/2/3），取消返回 nil（这里用 0 表示）
+        return awaitResponse(waiter) ?: 0
     }
 
     override fun choice(items: List<Any?>, selected: String?, message: String?): Any {
         val strings = items.map { it?.toString() ?: "" }
         GLog.i(TAG, "gg.choice: ${strings.size} 项")
+        if (strings.isEmpty()) return ""
+        val waiter = Waiter()
+        currentWaiter = waiter
         _pendingDialog.value = DialogRequest.Choice(strings, selected, message)
-        // 无法同步等待，返回第一项的文本，避免脚本拿到 nil 崩掉
-        return strings.firstOrNull() ?: ""
+        // 返回选中项文本；取消返回 nil（用空串代替，GG 侧是 nil）
+        return awaitResponse(waiter) ?: ""
     }
 
     override fun multiChoice(
@@ -103,8 +149,12 @@ class ComposeGgUiHost(
         val strings = items.map { it?.toString() ?: "" }
         val preselect = selection.mapNotNull { it?.toString() }
         GLog.i(TAG, "gg.multiChoice: ${strings.size} 项，预选 ${preselect.size}")
+        if (strings.isEmpty()) return emptyList<String>()
+        val waiter = Waiter()
+        currentWaiter = waiter
         _pendingDialog.value = DialogRequest.MultiChoice(strings, preselect, message)
-        return preselect
+        @Suppress("UNCHECKED_CAST")
+        return awaitResponse(waiter) as? List<String> ?: preselect
     }
 
     override fun prompt(
@@ -115,8 +165,12 @@ class ComposeGgUiHost(
         val texts = prompts.map { it?.toString() ?: "" }
         val defs = defaults.map { it?.toString() ?: "" }
         GLog.i(TAG, "gg.prompt: ${texts.size} 个输入项")
+        if (texts.isEmpty()) return defs
+        val waiter = Waiter()
+        currentWaiter = waiter
         _pendingDialog.value = DialogRequest.Prompt(texts, defs)
-        return defs
+        @Suppress("UNCHECKED_CAST")
+        return awaitResponse(waiter) as? List<String> ?: defs
     }
 
     override fun toast(text: String, fast: Boolean) {

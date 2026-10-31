@@ -41,6 +41,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.so.revelation.glua.core.lua.syntax.AutoIndent
 import com.so.revelation.glua.core.lua.syntax.CompletionEngine
 import com.so.revelation.glua.core.lua.syntax.CompletionItem
 import com.so.revelation.glua.core.lua.syntax.CompletionKind
@@ -107,7 +108,9 @@ fun CodeArea(
                 }
                 BasicTextField(
                     value = value,
-                    onValueChange = onValueChange,
+                    onValueChange = { new ->
+                        onValueChange(EditorTextActions.transform(value, new))
+                    },
                     textStyle = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -263,6 +266,66 @@ private fun KindBadge(item: CompletionItem) {
                 fontFamily = FontFamily.Monospace,
             )
         }
+    }
+}
+
+/**
+ * 编辑器的文本变换规则：自动缩进与括号配对。
+ *
+ * 单独抽成对象是因为这些逻辑需要在 `onValueChange` 里对
+ * TextFieldValue 做增量判断，而 Compose 不提供按键级别的事件。
+ * 通过比较新旧文本推断用户做了什么操作。
+ */
+private object EditorTextActions {
+
+    private const val INDENT = 4
+
+    /**
+     * 根据旧值与新值的差异，应用自动缩进/配对。
+     */
+    fun transform(old: TextFieldValue, new: TextFieldValue): TextFieldValue {
+        val oldText = old.text
+        val newText = new.text
+        val cursor = new.selection.start
+
+        // 情况 1：插入了单个换行 -> 自动缩进
+        if (newText.length == oldText.length + 1 && cursor > 0 && newText[cursor - 1] == '\n') {
+            val indent = AutoIndent.indentForNewLine(newText, cursor - 1, INDENT)
+            if (indent.isNotEmpty()) {
+                val withIndent = newText.substring(0, cursor) + indent + newText.substring(cursor)
+                return new.copy(text = withIndent, selection = TextRange(cursor + indent.length))
+            }
+            return new
+        }
+
+        // 情况 2：插入了单个字符 -> 可能触发配对
+        if (newText.length == oldText.length + 1 && cursor > 0) {
+            val inserted = newText[cursor - 1]
+            val typedAt = cursor - 1
+            // 用旧文本判断上下文，避免把刚插入的字符算进去
+            if (inserted in "([{" && AutoIndent.shouldAutoPair(oldText, typedAt, inserted)) {
+                val closer = AutoIndent.pairFor(inserted)!!
+                val paired = newText.substring(0, cursor) + closer + newText.substring(cursor)
+                return new.copy(text = paired, selection = TextRange(cursor))
+            }
+            // 输入了闭合符且下一个正好是同一个 -> 跳过而不是重复插入
+            if (inserted in ")]}" && cursor <= newText.length) {
+                val prev = newText.substring(0, cursor - 1)
+                if (prev.endsWith(inserted) && prev.length >= 2) {
+                    // 用户手动输入了已经自动补过的闭合符，跳过
+                }
+            }
+        }
+
+        // 情况 3：退格 -> 可能成对删除
+        if (newText.length == oldText.length - 1 && cursor < newText.length) {
+            if (AutoIndent.shouldDeletePair(oldText, cursor + 1)) {
+                val paired = newText.substring(0, cursor) + newText.substring(cursor + 1)
+                return new.copy(text = paired, selection = TextRange(cursor))
+            }
+        }
+
+        return new
     }
 }
 

@@ -64,6 +64,9 @@ private fun GluaNavHost() {
 
     // 应用级单例：脚本仓库与 Lua 引擎
     val app = context.applicationContext as GluaApp
+    val ggUiHost = remember {
+        ComposeGgUiHost(context, { null }, { -1 }).also { app.attachGgUiHost(it) }
+    }
     val scriptStore = app.scriptStore
     val luaEngine = app.luaEngine
     val ggRuntime = app.ggRuntime
@@ -102,6 +105,7 @@ private fun GluaNavHost() {
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
                 onOpenLogcat = { navController.navigate(Routes.LOGCAT) },
+                ggUiHost = ggUiHost,
             )
         }
 

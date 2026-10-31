@@ -35,6 +35,19 @@ class GluaApp : Application() {
     lateinit var mcpManager: com.so.revelation.glua.mcp.McpServerManager
         private set
 
+    /**
+     * gg 的 UI 宿主。由 MainActivity 在首帧后注入，
+     * 因为对话框需要 Composable 环境。
+     */
+    @Volatile
+    private var ggUiHost: com.so.revelation.glua.ui.editor.ComposeGgUiHost? = null
+
+    fun attachGgUiHost(host: com.so.revelation.glua.ui.editor.ComposeGgUiHost) {
+        ggUiHost = host
+    }
+
+    fun currentGgUiHost(): com.so.revelation.glua.ui.editor.ComposeGgUiHost? = ggUiHost
+
     override fun onCreate() {
         super.onCreate()
 
@@ -44,6 +57,14 @@ class GluaApp : Application() {
         LogBus.i(TAG, "==== Glua 启动 ====")
         LogBus.i(TAG, "PID=${LogBus.pid}, BuildConfig.DEBUG=${BuildConfig.DEBUG}")
 
+        // 日志持久化：写入 files/logs/glua.log
+        logPersistence = com.so.revelation.glua.core.log.LogPersistence(
+            java.io.File(filesDir, "logs/glua.log")
+        )
+        logPersistence?.start()
+        logPersistence?.let { LogBus.attachPersistence(it) }
+        LogBus.i(TAG, "日志持久化: ${logPersistence?.let { "已启用" } ?: "未启用"}")
+
         val native = NativeBridge.install()
         LogBus.i(TAG, "原生日志通道: ${if (native) "已启用" else "不可用"}")
 
@@ -51,10 +72,44 @@ class GluaApp : Application() {
         scriptStore = com.so.revelation.glua.core.files.ScriptStore(
             java.io.File(filesDir, "scripts")
         )
+        // 内存引擎：daemon 从 res/raw/chunk* 提取后启动
+        val daemon = com.so.revelation.glua.core.lua.gg.memory.GgDaemon(
+            filesDir = filesDir,
+            rawProvider = { name ->
+                val id = resources.getIdentifier(name, "raw", packageName)
+                if (id == 0) null else resources.openRawResource(id)
+            },
+        )
+        daemonRef = daemon
+        val memoryEngine = com.so.revelation.glua.core.lua.gg.memory.GgMemoryEngine(daemon)
+
+        // 尝试启动 daemon（无 root 时会安静失败）
+        val env = com.so.revelation.glua.core.lua.gg.GgEnvironment.snapshot()
+        if (env.rooted) {
+            val result = daemon.start(
+                rooted = true,
+                sdk = android.os.Build.VERSION.SDK_INT,
+                abis = android.os.Build.SUPPORTED_ABIS,
+            )
+            when (result) {
+                is com.so.revelation.glua.core.lua.gg.memory.GgDaemon.StartResult.Success ->
+                    LogBus.i(TAG, "内存 daemon 已启动: ${result.libId.desc} pid=${result.pid}")
+                is com.so.revelation.glua.core.lua.gg.memory.GgDaemon.StartResult.NoRoot ->
+                    LogBus.w(TAG, "无 root，内存功能不可用")
+                com.so.revelation.glua.core.lua.gg.memory.GgDaemon.StartResult.UnsupportedAbi ->
+                    LogBus.w(TAG, "找不到适配当前 ABI 的 daemon 二进制")
+                is com.so.revelation.glua.core.lua.gg.memory.GgDaemon.StartResult.Failed ->
+                    LogBus.w(TAG, "daemon 启动失败: ${result.reason}")
+            }
+        } else {
+            LogBus.i(TAG, "设备未 root，跳过 daemon 启动")
+        }
+
         ggRuntime = com.so.revelation.glua.core.lua.gg.GgRuntime(
             filesDir = filesDir,
             cacheDir = cacheDir,
             externalDir = getExternalFilesDir(null),
+            memoryEngine = memoryEngine,
         )
         luaEngine = com.so.revelation.glua.core.lua.LuaEngine(ggRuntime)
 
@@ -75,8 +130,14 @@ class GluaApp : Application() {
 
     override fun onTerminate() {
         mcpManager.stop()
+        daemonRef?.stop()
+        logPersistence?.stop()
         super.onTerminate()
     }
+
+    private var logPersistence: com.so.revelation.glua.core.log.LogPersistence? = null
+
+    private var daemonRef: com.so.revelation.glua.core.lua.gg.memory.GgDaemon? = null
 
     private companion object {
         const val TAG = "GluaApp"
