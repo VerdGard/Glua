@@ -14,11 +14,7 @@ android {
         versionCode = 20
         versionName = "2.5.4"
         multiDexEnabled = true
-        vectorDrawables.useSupportLibrary = true
-        ndk {
-            // 全部原生层以 res/raw/chunk* 形式随包分发，无需 abiFilters
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-        }
+        vectorDrawables.useSupportLibrary = false
     }
 
     buildTypes {
@@ -27,7 +23,6 @@ android {
             isDebuggable = true
         }
         release {
-            // 该工程的类名已由原版 R8 混淆，禁止再次 shrink 以免破坏跨类调用
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -44,8 +39,8 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
         buildConfig = true
+        viewBinding = false
     }
 
     packaging {
@@ -68,23 +63,12 @@ android {
     }
 }
 
+// 说明：
+// AndroidX / Material / sora-editor / 百度 SDK 的源码已由原 APK 反编译完整还原进
+// app/src/main/java，对应资源也已在 app/src/main/res 中（values/ 里是原 APK 全量资源表）。
+// 因此不再引入同名 Maven 依赖，否则会出现
+//   "Duplicate value for resource 'attr/xxx'"（aapt2 拒绝重复定义）。
 dependencies {
-    implementation("androidx.core:core:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.activity:activity:1.8.2")
-    implementation("androidx.fragment:fragment:1.6.2")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("androidx.viewpager:viewpager:1.0.0")
-    implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
-    implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
-    implementation("androidx.documentfile:documentfile:1.0.1")
-    implementation("androidx.emoji2:emoji2:1.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.7.0")
-    implementation("androidx.savedstate:savedstate:1.2.1")
-    implementation("androidx.transition:transition:1.4.1")
-    implementation("com.google.android.material:material:1.11.0")
+    // 仅保留反编译产物中缺失、且源码实际引用到的少量运行期依赖
     implementation("com.google.code.gson:gson:2.10.1")
 }
