@@ -18,6 +18,12 @@
 -dontwarn javax.script.**
 -dontwarn org.luaj.vm2.script.**
 
+# luaj-jse 的 luajc 包是字节码编译器，把 Lua 编译成 Java 字节码，
+# 依赖 org.apache.bcel（Apache 的字节码工程库）。Android 上不提供。
+# 我们只用解释执行（Globals.load + chunk.call），不需要 luajc。
+-dontwarn org.apache.bcel.**
+-dontwarn org.luaj.vm2.luajc.**
+
 # LuaJ 内部通过反射访问
 -keep class org.luaj.vm2.** { *; }
 -keepclassmembers class org.luaj.vm2.** {
