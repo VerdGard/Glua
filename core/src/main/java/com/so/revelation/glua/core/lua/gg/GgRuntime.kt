@@ -256,7 +256,7 @@ class GgRuntime(
 
                 "getValues" -> {
                     val addrs = extractAddresses(args[0])
-                    if (addrs.isEmpty()) "错误: getValues 需要包含 address 的 table"
+                    if (addrs.first.isEmpty()) "错误: getValues 需要包含 address 的 table"
                     else engine.readMemory(addrs.first, addrs.second).fold(
                         { m -> m.map { (a, v) -> mapOf("address" to a, "value" to v) } },
                         { "错误: getValues 失败 - ${it.message}" },

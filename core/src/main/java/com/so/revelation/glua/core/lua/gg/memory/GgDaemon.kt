@@ -115,7 +115,7 @@ class GgDaemon(
         }
         if (isRunning) {
             val id = libId ?: return StartResult.Failed("状态不一致：进程在但库标识缺失")
-            return StartResult.Success(id, daemonPath(id), process?.pid() ?: -1)
+            return StartResult.Success(id, daemonPath(id), processId(process))
         }
 
         val dir = daemonDir()
@@ -210,12 +210,50 @@ class GgDaemon(
                 return StartResult.Failed("daemon 启动后无响应")
             }
 
-            GLog.i(TAG, "daemon 已启动: ${id.desc} pid=${proc.pid()}")
-            StartResult.Success(id, file.absolutePath, proc.pid())
+            val pid = processId(proc)
+            GLog.i(TAG, "daemon 已启动: ${id.desc} pid=$pid")
+            StartResult.Success(id, file.absolutePath, pid)
         }.getOrElse { t ->
             GLog.e(TAG, "启动 ${id.desc} 失败", t)
             StartResult.Failed(t.message ?: t::class.java.simpleName, t)
         }
+    }
+
+    /**
+     * 获取进程 PID。
+     *
+     * `Process.pid()` 是 Java 9+ API，Android 上不可用（minSdk 24 只有
+     * `Process` 的旧接口）。这里用反射读内部字段 `pid`：
+     * - Android 的 `java.lang.ProcessImpl` 有 `int pid`
+     * - 某些 ROM 用 `int pid_` 或方法 `getPid()`
+     *
+     * 全部失败时返回 -1，不影响功能（PID 只用于日志展示）。
+     */
+    private fun processId(proc: Process?): Int {
+        if (proc == null) return -1
+
+        // 1) 方法 getPid()（部分实现提供）
+        runCatching {
+            val m = proc.javaClass.getMethod("getPid")
+            m.isAccessible = true
+            (m.invoke(proc) as? Number)?.toInt()
+        }.getOrNull()?.let { return it }
+
+        // 2) 字段 pid / pid_
+        for (fieldName in listOf("pid", "pid_")) {
+            val value = runCatching {
+                val f = proc.javaClass.getDeclaredField(fieldName)
+                f.isAccessible = true
+                f.getInt(proc)
+            }.getOrNull()
+            if (value != null && value > 0) return value
+        }
+
+        // 3) 兜底：从 toString 解析，形如 "Process[pid=1234, exitValue=...]"
+        return runCatching {
+            Regex("""pid=(\d+)""").find(proc.toString())
+                ?.groupValues?.get(1)?.toIntOrNull() ?: -1
+        }.getOrDefault(-1)
     }
 
     /**

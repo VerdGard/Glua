@@ -121,8 +121,14 @@ class LuaRuntime(
                 val resolved = resolve(path.tojstring())
                 return try {
                     globals.loadfile(resolved).call()
+                } catch (le: org.luaj.vm2.LuaError) {
+                    throw le
                 } catch (t: Throwable) {
-                    throw org.luaj.vm2.LuaError("dofile 失败: $resolved - ${t.message}", t)
+                    // LuaError 只有 (String) 与 (LuaValue) 构造器，
+                    // 原始异常信息拼进消息里，不丢上下文
+                    throw org.luaj.vm2.LuaError(
+                        "dofile 失败: $resolved - ${t.javaClass.simpleName}: ${t.message}"
+                    )
                 }
             }
         })
