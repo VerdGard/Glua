@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<animated-vector android:drawable="@drawable/mtrl_switch_thumb_checked"
-  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt">
-    <set android:interpolator="@interpolator/m3_sys_motion_easing_emphasized" android:shareInterpolator="true">
-        <target android:name="@string/mtrl_switch_thumb_path_name"><objectAnimator android:duration="@integer/mtrl_switch_thumb_pre_morphing_duration" android:valueFrom="@string/mtrl_switch_thumb_path_checked" android:valueTo="@string/mtrl_switch_thumb_path_morphing" android:valueType="pathType" android:propertyName="pathData" /></target>
-        <target android:name="@string/mtrl_switch_thumb_path_name"><objectAnimator android:duration="@integer/mtrl_switch_thumb_post_morphing_duration" android:startOffset="@integer/mtrl_switch_thumb_pre_morphing_duration" android:valueFrom="@string/mtrl_switch_thumb_path_morphing" android:valueTo="@string/mtrl_switch_thumb_path_unchecked" android:valueType="pathType" android:propertyName="pathData" /></target>
-    </set>
-</animated-vector>

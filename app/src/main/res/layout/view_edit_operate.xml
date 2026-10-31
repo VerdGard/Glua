@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.so.revelation.lua.View.ExpandableLinearLayout android:orientation="vertical" android:background="@color/colorPrimary" android:layout_width="fill_parent" android:layout_height="wrap_content" app:el_duration="400" app:el_expanded="false"
-  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
-    <TextView android:layout_width="wrap_content" android:layout_height="42.0dip" android:text="test" app:layout_expandable="true" />
-</com.so.revelation.lua.View.ExpandableLinearLayout>

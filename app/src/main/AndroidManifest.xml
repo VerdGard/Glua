@@ -2,72 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:mimeType="application/vnd.android.package-archive" />
-        </intent>
-    </queries>
 
     <application
-        android:name="com.so.revelation.lua.AppContext"
+        android:name=".GluaApp"
         android:allowBackup="true"
-        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-        android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:largeHeap="true"
-        android:requestLegacyExternalStorage="true"
-        android:resizeableActivity="true"
-        android:theme="@style/AppTheme.Parent2"
-        android:usesCleartextTraffic="true">
+        android:roundIcon="@drawable/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Glua">
 
         <activity
-            android:name="com.so.revelation.lua.EditorActivity"
+            android:name=".MainActivity"
             android:exported="true"
-            android:fitsSystemWindows="true"
-            android:label="@string/app_name"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.so.revelation.lua.MainActivity"
-            android:exported="false" />
-
-        <activity
-            android:name="com.so.revelation.lua.DemoActivity"
-            android:exported="false" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
     </application>
 </manifest>

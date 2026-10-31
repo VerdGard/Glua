@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Glua"
 include(":app")
+include(":core")

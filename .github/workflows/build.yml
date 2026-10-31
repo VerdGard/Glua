@@ -24,20 +24,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Accept SDK licenses and install components
+      - name: Install SDK and NDK
         run: |
           SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-          echo "SDK root: $SDK"
-          ls "$SDK" || true
           yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
-          "$SDK/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" --install \
+            "platform-tools" "platforms;android-35" "build-tools;35.0.0" \
+            "ndk;27.0.12077973" "cmake;3.22.1" 2>&1 | tail -5
           echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.11.1'
 
       - name: Assemble debug
         id: assemble
@@ -47,6 +46,11 @@ jobs:
           gradle :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee build-output.log
           exit ${PIPESTATUS[0]}
 
+      - name: Assemble release
+        if: steps.assemble.outcome == 'success'
+        continue-on-error: true
+        run: gradle :app:assembleRelease --stacktrace --no-daemon 2>&1 | tee -a build-output.log
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,12 +58,12 @@ jobs:
           name: build-log
           path: build-output.log
 
-      - name: Upload APK
+      - name: Upload APKs
         if: steps.assemble.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: Glua-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: Glua-apk
+          path: app/build/outputs/apk/**/*.apk
           retention-days: 90
 
       - name: Fail if assemble failed

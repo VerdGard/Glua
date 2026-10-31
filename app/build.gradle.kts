@@ -1,30 +1,30 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
-    namespace = "com.so.revelation.lua"
-    compileSdk = 34
+    namespace = "com.so.revelation.glua"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.so.revelation.lua"
-        minSdk = 21
-        targetSdk = 33
-        versionCode = 20
-        versionName = "2.5.4"
-        multiDexEnabled = true
-        vectorDrawables.useSupportLibrary = false
+        applicationId = "com.so.revelation.glua"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0.0"
+        vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             isMinifyEnabled = false
-            isDebuggable = true
         }
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -33,28 +33,20 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    kotlinOptions { jvmTarget = "17" }
 
     buildFeatures {
+        compose = true
         buildConfig = true
-        viewBinding = false
     }
 
     packaging {
-        resources {
-            excludes += setOf(
-                "META-INF/DEPENDENCIES",
-                "META-INF/LICENSE",
-                "META-INF/LICENSE.txt",
-                "META-INF/NOTICE",
-                "META-INF/NOTICE.txt",
-                "META-INF/*.kotlin_module"
-            )
-        }
-        jniLibs.useLegacyPackaging = true
+        resources.excludes += setOf(
+            "/META-INF/{AL2.0,LGPL2.1}",
+            "META-INF/DEPENDENCIES",
+            "META-INF/LICENSE*",
+            "META-INF/NOTICE*"
+        )
     }
 
     lint {
@@ -63,12 +55,30 @@ android {
     }
 }
 
-// 说明：
-// AndroidX / Material / sora-editor / 百度 SDK 的源码已由原 APK 反编译完整还原进
-// app/src/main/java，对应资源也已在 app/src/main/res 中（values/ 里是原 APK 全量资源表）。
-// 因此不再引入同名 Maven 依赖，否则会出现
-//   "Duplicate value for resource 'attr/xxx'"（aapt2 拒绝重复定义）。
 dependencies {
-    // 仅保留反编译产物中缺失、且源码实际引用到的少量运行期依赖
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(project(":core"))
+
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+
+    val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.compose.foundation:foundation")
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 }

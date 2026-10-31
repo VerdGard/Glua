@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content"
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <View android:layout_gravity="center" android:id="@id/log_text_viewView" android:layout_width="2.0dip" android:layout_height="2.0dip" android:layout_marginLeft="3.0dip" />
-    <TextView android:id="@id/log_text_viewTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="3.0dip" android:textIsSelectable="true" />
-</LinearLayout>
